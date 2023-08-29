@@ -67,7 +67,7 @@ if(@$_GET['a']=="probe") {
     $data = GetCpuPercentages($stat1, $stat2);
     $cpu_show = $data['cpu0']['user']."%us,  ".$data['cpu0']['sys']."%sy,  ".$data['cpu0']['nice']."%ni, ".$data['cpu0']['idle']."%id,  ".$data['cpu0']['iowait']."%wa,  ".$data['cpu0']['irq']."%irq,  ".$data['cpu0']['softirq']."%softirq";
     function makeImageUrl($title, $data) {
-        $api='//vpng.net/mon/cpu_api.php?User='.$data['user'].'&Nice='.$data['nice'].'&Sys='.$data['sys'].'&Idle='.$data['idle'].'&Iowait='.$data['iowait'].'&chtt=Core+'.$title;return $api;
+        $api='//vpng.net/phpMonitor/cpu_api.php?User='.$data['user'].'&Nice='.$data['nice'].'&Sys='.$data['sys'].'&Idle='.$data['idle'].'&Iowait='.$data['iowait'].'&chtt=Core+'.$title;return $api;
     }
     if(@$_GET['act'] == "cpu_percentage"){
         echo "<center><b><font face='Microsoft YaHei' color='#666666' size='3'>CPU负载饼图详情</font></b><br /><br />";foreach( $data as $k => $v ) {echo '<iframe src="' . makeImageUrl( $k, $v ) . '" frameborder=no scrolling=no marginwidth=0 marginheight=0 width=350 height=350></iframe>';}echo "</center>";exit();
@@ -383,7 +383,7 @@ if(@$_GET['a']=="probe") {
     $temp = $file."_temp.php"; //临时文件名
     //检查更新
     if(!empty(@$_POST['update'])){
-        $url = 'https://omoristation.github.io/phpMonitor/mon';
+        $url = 'https://raw.githubusercontent.com/omoristation/phpMonitor/main/mon';
         if ($fp_output = fopen($temp, 'w')){
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_FILE, $fp_output);
