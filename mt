@@ -414,6 +414,7 @@ if(@$_GET['a']=="probe") {
         header('location:'.$file."?a=probe");
     }
 ?>
+<!--nobanner-->
 <!Doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
