@@ -1,5 +1,5 @@
 <?php
-$version=20230829; //此行勿动位置，只能更新八位数版本号
+$version=20230830; //此行勿动位置，只能更新八位数版本号
 /* https://github.com/omoristation/phpMonitor */
 //error_reporting(-1); //打印出所有的 错误信息
 //测速ping跟上传部分
@@ -131,26 +131,28 @@ if(@$_GET['a']=="probe") {
         // MEMORY
         if (false === ($str = @file("/proc/meminfo"))) return false;
         $str = implode("", $str);
-        preg_match_all("/MemTotal\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $memTotal);
-        preg_match_all("/MemFree\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $memFree);
-        preg_match_all("/MemAvailable\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $memAvailable);
-        preg_match_all("/Buffers\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $buffers);
-        preg_match_all("/Cached\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $cached);
-        preg_match_all("/SwapTotal\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $swapTotal);
-        preg_match_all("/SwapFree\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $swapFree);
+        preg_match_all("/MemTotal\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $memTotal); //总内存的大小
+        preg_match_all("/MemFree\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $memFree); //当前可用的空闲内存大小 系统未使用的物理内存量
+        preg_match_all("/MemAvailable\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $memAvailable); //还可以分配给新进程或用于缓存的近似可用内存大小 注意这是一个估计值，并不精确。
+        preg_match_all("/Buffers\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $buffers); //用于磁盘块 I/O 缓冲的内存大小
+        preg_match_all("/Cached\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $cached); //用于文件系统缓存的内存大小 页缓存中的内存（磁盘缓存和共享内存）
+        preg_match_all("/Active\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $active); //正在活跃使用的内存大小 未使用变量
+        preg_match_all("/SwapTotal\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $swapTotal); //交换空间总大小
+        preg_match_all("/SwapFree\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $swapFree); //当前可用的交换空间大小
+        preg_match_all("/SwapCached\s{0,}\:+\s{0,}([\d\.]+)/s", $str, $swapCached); //在交换区中被缓存的内存大小 未使用变量
         $res['memTotal'] = $memTotal[1][0]*1024; //获取的是kB,需要转成 bityes
-        $res['memFree'] = $memFree[1][0]*1024; //尚未使用的内存
-        $res['memAvailable'] = $memAvailable[1][0]*1024; //当前可用内存 等于MemFree+可回收内存
+        $res['memFree'] = !empty($memFree[1][0]) ? $memFree[1][0]*1024 : 0; //尚未使用的物理内存
+        $res['memAvailable'] = !empty($memAvailable[1][0]) ? $memAvailable[1][0]*1024 : 0; //当前可用内存 等于 MemFree +可回收内存
         $res['memBuffers'] = !empty($buffers[1][0]) ? $buffers[1][0]*1024 : 0;
         $res['memCached'] = !empty($cached[1][0]) ? $cached[1][0]*1024 : 0;
         $res['memUsed'] = $res['memTotal']-$res['memFree']; //已用内存
         $res['memPercent'] = (floatval($res['memTotal'])!=0)?round($res['memUsed']/$res['memTotal']*100,2):0; //内存总使用率
         $res['memBuffersPercent'] = (floatval($res['memTotal'])!=0)?round($res['memBuffers']/$res['memTotal']*100,2):0; //缓冲使用率
-        $res['memRealUsed'] = !empty($res['memAvailable'])?$res['memTotal']-$res['memAvailable']:$res['memTotal']-$res['memFree']-$res['memBuffers']- $res['memCached']; //真实已用内存
-        $res['memRealFree'] = $res['memTotal'] - $res['memRealUsed']; //真实可用
-        $res['memRecyclable'] = $res['memAvailable'] - $res['memFree'] - $res['memBuffers'] - $res['memCached']; //可回收内存
+        $res['memRealUsed'] = $res['memTotal']-$res['memFree']-$res['memBuffers']- $res['memCached']; //真实已用内存
+        $res['memRealFree'] = $res['memTotal'] - $res['memRealUsed']; //真实可用 变量未使用
+        $res['memRecyclable'] = $res['memAvailable'] - $res['memFree'] - $res['memBuffers'] - $res['memCached'] > 0 ? $res['memAvailable'] - $res['memFree'] - $res['memBuffers'] - $res['memCached']:0; //可回收内存
+        $res['memRecyclablePercent'] = $res['memRecyclable']>=0?round($res['memRecyclable']/$res['memTotal']*100,2):0; //可回收内存使用率
         $res['memRealPercent'] = (floatval($res['memTotal'])!=0)?round($res['memRealUsed']/$res['memTotal']*100,2):0; //真实内存使用率
-        $res['memRecyclablePercent'] = (floatval($res['memTotal'])!=0)?round($res['memRecyclable']/$res['memTotal']*100,2):0; //可回收内存使用率
         $res['memCachedPercent'] = (floatval($res['memCached'])!=0)?round($res['memCached']/$res['memTotal']*100,2):0; //Cached内存使用率
         $res['swapTotal'] = $swapTotal[1][0]*1024;
         $res['swapFree'] = $swapFree[1][0]*1024;
@@ -342,7 +344,7 @@ if(@$_GET['a']=="probe") {
     $swapFree = formatsize($sysInfo['swapFree']);
     $swapPercent = $sysInfo['swapPercent'];
     $memRealUsed = formatsize($sysInfo['memRealUsed']); //真实内存使用
-    $memRealFree = formatsize($sysInfo['memRealFree']); //真实内存空闲
+    $memRealFree = formatsize($sysInfo['memRealFree']); //真实内存空闲 变量未使用
     $memRealPercent = $sysInfo['memRealPercent']; //真实内存使用比率
     $memRecyclable = formatsize($sysInfo['memRecyclable']); //可回收内存使用
     $memRecyclablePercent = $sysInfo['memRecyclablePercent']; //可回收内存使用比率
