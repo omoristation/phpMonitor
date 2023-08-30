@@ -1,5 +1,5 @@
 <?php
-$version=20230831; //此行勿动位置，只能更新八位数版本号
+$version=20230901; //此行勿动位置，只能更新八位数版本号
 /* https://github.com/omoristation/phpMonitor */
 //error_reporting(-1); //打印出所有的 错误信息
 //测速ping跟上传部分
@@ -608,7 +608,7 @@ function getJSONData(){
     $.getJSON('?act=rt&a=probe&callback=?', displayData);
 }
 function formatsize(bytes){
-    var s = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    var s = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
     var e = Math.floor(Math.log(bytes)/Math.log(1024));
     return (bytes/Math.pow(1024, Math.floor(e))).toFixed(2)+""+s[e]+"bps";
 }
