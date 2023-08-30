@@ -1,5 +1,5 @@
 <?php
-$version=20230830; //此行勿动位置，只能更新八位数版本号
+$version=20230831; //此行勿动位置，只能更新八位数版本号
 /* https://github.com/omoristation/phpMonitor */
 //error_reporting(-1); //打印出所有的 错误信息
 //测速ping跟上传部分
@@ -148,7 +148,7 @@ if(@$_GET['a']=="probe") {
         $res['memUsed'] = $res['memTotal']-$res['memFree']; //已用内存
         $res['memPercent'] = (floatval($res['memTotal'])!=0)?round($res['memUsed']/$res['memTotal']*100,2):0; //内存总使用率
         $res['memBuffersPercent'] = (floatval($res['memTotal'])!=0)?round($res['memBuffers']/$res['memTotal']*100,2):0; //缓冲使用率
-        $res['memRealUsed'] = $res['memTotal']-$res['memFree']-$res['memBuffers']- $res['memCached']; //真实已用内存
+        $res['memRealUsed'] = !empty($res['memAvailable'])?$res['memTotal']-$res['memAvailable']:$res['memTotal']-$res['memFree']-$res['memBuffers']- $res['memCached']; //真实已用内存
         $res['memRealFree'] = $res['memTotal'] - $res['memRealUsed']; //真实可用 变量未使用
         $res['memRecyclable'] = $res['memAvailable'] - $res['memFree'] - $res['memBuffers'] - $res['memCached'] > 0 ? $res['memAvailable'] - $res['memFree'] - $res['memBuffers'] - $res['memCached']:0; //可回收内存
         $res['memRecyclablePercent'] = $res['memRecyclable']>=0?round($res['memRecyclable']/$res['memTotal']*100,2):0; //可回收内存使用率
